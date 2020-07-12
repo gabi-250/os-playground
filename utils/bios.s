@@ -1,20 +1,19 @@
 .code16
 .text
+.global print_str
 
-# Checks the status of the A20 line.
+# Prints a string using bios interrupt 0x10 (AH = 0x13).
 #
-# Returns:
-#   AX - 1, if the A20 line is enabled, and 0 otherwise.
-print_message:
+# Arguments:
+#   ES:BP - the address of the string string to print
+#   CX - the length of the string
+#   DH:DL - the row and column where to print the string
+print_str:
     mov $0x13, %ah
     mov $0x01, %al
     # The video page.
     xor %bh, %bh
     # The colour: 0x14 (1 = blue background, 4 = red text)
     mov $0x14, %bl
-    # The message length
-    mov msg_len, %cx
-    # DH:DL = row:column
-    xor %dx, %dx
     int $0x10
     ret

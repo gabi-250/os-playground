@@ -2,17 +2,16 @@
     .text
     .global _boot
 _boot:
-    # DH - number of sectors to load
-    mov $1, %dh
-    # DL - drive number
-    mov $0, %dh
-    # ES:BX - the address to load sectors into
-    mov $0, %bx
-    mov %bx, %es
-    mov $0x7e00, %bx
+    xor %ax, %ax
+    mov %ax, %es
+    # CX contains the current number of times we've tried to load the sector
+    mov %ax, %cx
 disk_load:
-    push %dx
-    # Read sector(s) into memory
+    add $1, %cx
+    push %cx
+    # ES:BX - the address to load sectors into
+    mov $0x7e00, %bx
+    # Read sectors into memory
     mov $2, %ah
     # The number of sectors to read
     mov $1, %al
@@ -24,34 +23,29 @@ disk_load:
     mov $2, %cl
     # BIOS interrupt for disk functions
     int $0x13
-    # if the carry flag is set, an error occurred
+    # If the carry flag is set, an error occurred
     jc disk_error
-    pop %dx
     # Check if the number of sectors we wanted to read equals the number
     # of sectors read
     cmp $1, %al
     jne disk_error
     jmp $0,$0x7e00
 disk_error:
+    pop %cx
+    # The load might fail, re-try up to 2 times
+    cmp $3, %cx
+    jl disk_load
     cli
-    # Move 0 into ES
     xor %ax, %ax
-    mov %ax, %es
-    mov $0x13, %ah
-    mov $0x01, %al
-    # The video page.
-    xor %bh, %bh
-    # The colour: 0x14 (1 = blue background, 4 = red text)
-    mov $0x14, %bl
-    # The message length
-    mov disk_err_msg_len, %cx
-    # The row:
+    # Print at row 0x10, column 0x10
     mov $0x10, %dh
-    # The column:
     mov $0x10, %dl
     # The address of the message is in ES:BP
     mov $disk_err_msg, %bp
-    int $0x10
+    # The message length
+    mov disk_err_msg_len, %cx
+    call print_str
     hlt
+    .include "utils/bios.s"
 disk_err_msg:     .ascii "disk error"
 disk_err_msg_len: .word (. - disk_err_msg)
