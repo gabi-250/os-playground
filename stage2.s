@@ -1,21 +1,6 @@
     .code16
     .text
 _stage2:
-    # Move 0x0 into ES
-    mov $0, %ax
-    mov %ax, %es
-    mov %ax, %ds
-    # Set video mode
-    mov $0x0, %ah
-    # 80x25
-    mov $0x02, %al
-    int $0x10
-    # Set the background colour
-    mov $0xb, %ah
-    mov $0, %bh
-    # 2 = green
-    mov $2, %bl
-    int $0x10
     # The address of the message is in DS:SI
     mov $msg, %si
     call print_str2
@@ -25,19 +10,27 @@ _stage2:
     # The address of the message is in DS:SI
     mov $msg_not_enabled, %si
     call print_str2
-    jmp halt
+#    jmp halt
+    jmp load_kernel
 a20_message:
-    # The message length
-    mov msg_enabled_len, %cx
     # The address of the message is in DS:SI
     mov $msg_enabled, %si
+    call print_str2
+load_kernel:
+    # Load the second stage into ES:BX
+    mov $0x1000, %bx
+    # Start reading from sector 3
+    mov $3, %cl
+    # DL = the number of sectors to load
+    mov $5, %dl
+    call disk_load
+    #jmp $0,$1000
+    mov $load_error, %si
     call print_str2
 halt:
     hlt
     .include "utils/memory.s"
-msg:                 .asciz "Starting stage 2...\n\r"
-msg_len:             .word (. - msg)
-msg_enabled:         .asciz "A20 enabled\n\r"
-msg_enabled_len:     .word (. - msg_enabled)
-msg_not_enabled:     .asciz "A20 not enabled\n\r"
-msg_not_enabled_len: .word (. - msg_not_enabled)
+msg:             .asciz "Starting stage 2...\n\r"
+msg_enabled:     .asciz "A20 enabled\n\r"
+msg_not_enabled: .asciz "A20 not enabled\n\r"
+load_error:      .asciz "Failed to load kernel\n\r"

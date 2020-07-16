@@ -1,4 +1,5 @@
 ENTRY(_boot)
+
 SECTIONS
 {
     . = 0x7c00;
@@ -10,6 +11,11 @@ SECTIONS
         /* The boot signature */
         SHORT(0xaa55)
         stage2.o(.*)
-        . = 0x400;
+        . = 0x1000;
+        kernel_jmp.o(.*)
+        kernel.o(.*)
+        . = 0x1200;
     }
 }
+
+OUTPUT_FORMAT(binary)
