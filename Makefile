@@ -15,5 +15,8 @@ kernel.o: kernel.c
 qemu: $(OS).bin
 	qemu-system-x86_64 -drive format=raw,file=./$<
 
+debug: $(OS).bin
+	qemu-system-x86_64 -drive format=raw,file=./$< -s -S
+
 clean:
 	rm -f $(OBJS) $(BOOT).bin

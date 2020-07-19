@@ -1,8 +1,26 @@
 .code16
-.text
 .global print_str
 .global print_str2
 .global disk_load
+.global init_video
+
+init_video:
+    # Set video mode
+    mov $0x0, %ah
+    # 80x25, colour
+    mov $0x03, %al
+    int $0x10
+    # Set the background colour
+    mov $0xb, %ah
+    mov $0, %bh
+    # 2 = green
+    mov $2, %bl
+    int $0x10
+    xor %bh,%bh
+    xor %dx, %dx
+    mov $03, %ah
+    int $0x10
+    ret
 
 # Prints a string using bios interrupt 0x10 (AH = 0x13).
 #
@@ -40,21 +58,24 @@ print_str2:
 .Lprint_str2_exit:
     ret
 
-# Prints a string one character at a time with bios interrupt 0x10
-# (AH = 0x0E).
+# Loads a sector from disk using bios interrupt 0x10
+# (AH = 0x02).
 #
 # Arguments:
 #   ES:BX - the address to load sectors into
 #   CL - the sector to start reading from
 #   DL - the number of sectors to load
+#
 disk_load:
     xor %si, %si
+    # The whole register has to be moved here (because fs is a 16-bit register),
+    # although we only care about the lower 8 bits
+    mov %dx, %fs
 .Ldisk_load_start:
     add $1, %si
-    push %si
+    mov %si, %gs
     # The number of sectors to read
     mov %dl, %al
-    push %dx
     # Read sectors into memory
     mov $2, %ah
     # Cylinder 0
@@ -67,24 +88,20 @@ disk_load:
     int $0x13
     # If the carry flag is set, an error occurred
     jc .Ldisk_error
-    pop %dx
     # Check if the number of sectors we wanted to read equals the number
     # of sectors read
+    mov %fs, %dx
     cmp %dl, %al
-    jne .Lprepare_disk_error
+    jne .Ldisk_error
     ret
-.Lprepare_disk_error:
-    push %dx
-    jmp .Ldisk_error
 .Ldisk_error:
-    pop %dx
-    pop %si
-    # The load might fail, re-try up to 2 times
-    cmp $3, %si
+    mov %gs, %si
+    # The load might fail, re-try up to 3 times
+    cmp $4, %si
     jg disk_load
     mov $disk_err_msg, %si
     call print_str2
     hlt
 
-disk_err_msg:     .asciz "disk error"
+disk_err_msg:     .asciz "disk error\n\r"
 disk_err_msg_len: .word (. - disk_err_msg)

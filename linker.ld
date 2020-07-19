@@ -11,10 +11,15 @@ SECTIONS
         /* The boot signature */
         SHORT(0xaa55)
         stage2.o(.*)
+        /* Calculate how many sectors there are in stage2.s (to know how many
+         * sectors to read from disk when loading the stage 2 bootloader)
+         */
+        __stage2_sectors = ABSOLUTE((. - _boot) / 512);
         . = 0x1000;
         kernel_jmp.o(.*)
         kernel.o(.*)
-        . = 0x1200;
+        __kernel_sectors = ABSOLUTE((. - _stage2) / 512);
+        . = ALIGN(512);
     }
 }
 
