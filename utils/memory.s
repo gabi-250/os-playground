@@ -1,6 +1,5 @@
 .code16
 .text
-.global check_a20
 
 # Checks the status of the A20 line.
 #
@@ -51,3 +50,34 @@ check_a20:
     pop %ds
     popf
     ret
+
+# Sets the A20 line.
+set_a20:
+mov     $0x2403, %ax
+int     $0x15
+jb      a20_failed
+cmp     $0, %ah
+jnz     a20_failed
+
+mov     $0x2402, %ax
+int     $0x15
+jb      a20_failed
+cmp     $0, %ah
+jnz     a20_failed
+
+cmp     $1, %al
+jz      a20_activated
+
+mov     $0x2401, %ax
+int     $0x15
+jb      a20_failed
+cmp     $0, %ah
+jnz     a20_failed
+
+a20_activated:
+    mov $1, %ax
+    ret
+a20_failed:
+    mov $0, %ax
+    ret
+

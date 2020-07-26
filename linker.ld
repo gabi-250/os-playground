@@ -15,11 +15,7 @@ SECTIONS
          * sectors to read from disk when loading the stage 2 bootloader)
          */
         __stage2_sectors = ABSOLUTE((. - _boot) / 512);
-        . = 0x1000;
-        kernel_jmp.o(.*)
-        kernel.o(.*)
-        __kernel_sectors = ABSOLUTE((. - _stage2) / 512);
-        . = ALIGN(512);
+        . = 0x400;
     }
 }
 

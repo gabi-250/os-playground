@@ -65,7 +65,6 @@ print_str2:
 #   ES:BX - the address to load sectors into
 #   CL - the sector to start reading from
 #   DL - the number of sectors to load
-#
 disk_load:
     xor %si, %si
     # The whole register has to be moved here (because fs is a 16-bit register),
