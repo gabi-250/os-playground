@@ -23,8 +23,8 @@ _boot:
     mov $0x7e00, %bx
     # Start reading from sector 2 (after the boot sector)
     mov $2, %cl
-    # DL = the number of sectors to load
-    mov $__stage2_sectors, %dl
+    # DI = the number of sectors to load
+    mov $__stage2_sectors, %di
     call disk_load
     jmp $0,$0x7e00
     hlt
