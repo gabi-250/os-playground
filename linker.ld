@@ -1,4 +1,5 @@
 ENTRY(_boot)
+OUTPUT_FORMAT("binary")
 
 SECTIONS
 {
@@ -16,6 +17,10 @@ SECTIONS
          */
         __stage2_sectors = ABSOLUTE((. - _boot) / 512);
         . = 0x400;
+        /* XXX choose an address where to load the kernel
+         */
+        . = 0xffc00;
+        kernel.o(.*)
     }
 }
 

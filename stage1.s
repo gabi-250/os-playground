@@ -18,6 +18,7 @@ _boot:
     mov	%ax, %es
     mov $STACK_SEGMENT, %ax
     mov %ax, %ss
+
     call init_video
     # Load the second stage into ES:BX
     mov $0x7e00, %bx
