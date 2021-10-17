@@ -19,7 +19,6 @@ enable_protected_mode:
     mov $prot_mode_msg, %si
     call print_str2
     lgdt gdt_descriptor
-    cli
     mov %cr0, %eax
     or $1, %eax
     mov %eax, %cr0

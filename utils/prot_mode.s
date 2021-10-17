@@ -7,12 +7,11 @@ prot_mode_entry:
     mov %ax, %es
     mov %ax, %fs
     mov %ax, %gs
-    mov $0x90000, %ebp
+    mov $0x9000, %ebp
     mov %ebp, %esp
-    jmp start_kernel
-    hlt
 start_kernel:
     mov $hello, %ebx
     call print_no_bios
+    call k_main
     hlt
 hello: .asciz "Hello from protected mode..."

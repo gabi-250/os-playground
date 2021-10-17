@@ -11,10 +11,10 @@ $(OS).bin: $(OBJS)
 	$(LD) -m elf_i386 -T linker.ld -o $@
 
 kernel.o: kernel.c
-	gcc -ffreestanding -m32 -fno-pie -c $< -o $@
+	gcc -ffreestanding -m32 -fno-pie -fno-stack-protector -c $< -o $@
 
 qemu: $(OS).bin
-	qemu-system-x86_64 -drive format=raw,file=./$<
+	qemu-system-x86_64 -d int -no-reboot -drive format=raw,file=./$<
 
 debug: $(OS).bin
 	qemu-system-x86_64 -drive format=raw,file=./$< -s -S

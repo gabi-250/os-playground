@@ -29,7 +29,7 @@ data_descriptor:
     # Base (bits 24-31)
     .byte 0x0
 gdt_descriptor:
-gdt_size:       .word (. - gdt)
+gdt_size:       .word (. - gdt - 1)
 gdt_start:      .long gdt
 
 .set GDT_CODE_SEGMENT, (code_descriptor - gdt)
